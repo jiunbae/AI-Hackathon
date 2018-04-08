@@ -19,6 +19,7 @@ flags.DEFINE_integer('highway_num', 4, 'Int, number of the highway layer, defaul
 flags.DEFINE_integer('batch_size', 32, 'Int, size of batch, default 32')
 flags.DEFINE_integer('n_epoch', 100, 'Int, number of epoch, default 100')
 flags.DEFINE_string('doc2vec_model', './doc2vec_model/doc2vec_twitter_kowiki_300000_docs.model', 'String, path of the doc2vec model.')
+flags.DEFINE_string('model_name', 'default', 'String, name of the model, default default')
 flags.DEFINE_string('iteration', '0', 'nsml reserved')
 flags.DEFINE_string('mode', 'train', 'nsml reserved')
 flags.DEFINE_integer('pause', 0, 'nsml reserved')
@@ -29,12 +30,13 @@ FLAGS = flags.FLAGS
 # This is for nsml leaderboard
 def bind_model(model, config):
     # 학습한 모델을 저장하는 함수입니다.
-    def save(filename, *args):
-        model.dump(filename)
+    def save(dir_name, *args):
+        os.makedirs(dir_name, exist_ok=True)
+        model.dump(os.path.join(dir_name, config.model_name))
 
     # 저장한 모델을 불러올 수 있는 함수입니다.
-    def load(filename, *args):
-        model.load(filename)
+    def load(dir_name, *args):
+        model.load(os.path.join(dir_name, config.model_name))
 
     def infer(raw_data, **kwargs):
         """

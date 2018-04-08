@@ -12,11 +12,11 @@ def paused(scope):
 
 def save(*args, **kwargs):
     global _save
-    return _save('./tmp/result', *args, **kwargs)
+    return _save('./tmp', *args, **kwargs)
 
 def load(*args, **kwargs):
     global _load
-    return _load('./tmp/result', *args, **kwargs)
+    return _load('./tmp', *args, **kwargs)
 
 def infer(*args, **kwargs):
     global _infer
