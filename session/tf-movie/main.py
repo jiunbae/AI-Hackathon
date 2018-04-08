@@ -58,7 +58,7 @@ def bind_model(model, config):
 def main(_):
     sess = tf.Session()
     model = TacotronEncoder(sess,
-                            10, 
+                            11, # 0 ~ 10
                             FLAGS.vector_size, 
                             FLAGS.max_len, 
                             FLAGS.embed_size, 
@@ -88,7 +88,9 @@ def main(_):
                 loss += model.inference(model.loss, batch_x, batch_y)
             
             loss /= batch.iter_per_epoch
-            print('Epoch {} : {}'.format(epoch, loss))
+            acc = model.inference(model.metric, data.val_data, data.val_label)
+
+            print('Epoch {} : loss-{}, acc-{}'.format(epoch, loss, acc))
             nsml.report(summary=True, scope=locals(), epoch=epoch, epoch_total=FLAGS.n_epoch,
                         train__loss=loss, step=epoch)
             nsml.save(epoch)

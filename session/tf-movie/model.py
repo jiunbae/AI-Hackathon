@@ -34,9 +34,13 @@ class TacotronEncoder(object):
 
         self.model = self._get_model()
         self.loss = self._get_loss()
+        self.metric = self._get_metric()
 
         self.optimize = tf.train.AdamOptimizer(self.learning_rate, self.beta1).minimize(self.loss)
-        self.summary = tf.summary.scalar('Metric', self.loss)
+        self.summary = tf.summary.merge([
+            tf.summary.scalar('Metric', self.metric),
+            tf.summary.scalar('Loss', self.loss)
+        ])
         self.ckpt = tf.train.Saver()
 
         sess.run(tf.global_variables_initializer())
@@ -45,7 +49,7 @@ class TacotronEncoder(object):
         self.sess.run(self.optimize, feed_dict={self.plc_embed: x, self.plc_y: y, self.plc_dropout: dropout, self.plc_training: True})
 
     def pred(self, x):
-        out = tf.argmax(self.model, axis=1) + 1
+        out = tf.argmax(self.model, axis=1)
         return self.sess.run(out, feed_dict={self.plc_embed: x, self.plc_dropout: 1.0, self.plc_training: False})
 
     def inference(self, obj, x, y=None):
@@ -138,3 +142,8 @@ class TacotronEncoder(object):
     def _get_loss(self):
         onehot = tf.one_hot(self.plc_y, self.y_dim)
         return tf.reduce_sum(tf.nn.softmax_cross_entropy_with_logits(logits=self.model, labels=onehot))
+
+    def _get_metric(self):
+        correct = tf.equal(tf.argmax(self.model, axis=1, output_type=tf.int32), self.plc_y)
+        acc = tf.reduce_mean(tf.cast(correct, tf.float32))
+        return acc
