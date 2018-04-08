@@ -60,6 +60,7 @@ if __name__ == '__main__':
     args.add_argument('--batch', type=int, default=2000)
     args.add_argument('--vocasize', type=int, default=20000)
     args.add_argument('--embedding', type=int, default=200)
+    args.add_argument('--lr', type=float, default=.01)
     args.add_argument('--maxlen', type=int, default=100)
     args.add_argument('--minlen', type=int, default=3)
     args.add_argument('--seed', type=int, default=1234)
@@ -79,7 +80,7 @@ if __name__ == '__main__':
     bind_model(model, config)
 
     criterion = nn.MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.01)
+    optimizer = optim.Adam(model.parameters(), lr=config.lr)
 
     # DONOTCHANGE: They are reserved for nsml
     if config.pause: nsml.paused(scope=locals())
