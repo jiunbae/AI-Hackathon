@@ -7,7 +7,7 @@ import numpy as np
 from process import continuous
 
 class CNNReg(nn.Module):
-    def __init__(self, length: int, embedding_dim:int, CUDA:int = 1):
+    def __init__(self, length: int, embedding_dim: int, maxlen: int, CUDA: int = 1):
         super(CNNReg, self).__init__()
         self.kernel_size = [2, 3, 4, 5]
         self.channel_out = 10
@@ -17,9 +17,10 @@ class CNNReg(nn.Module):
         self.linear2 = nn.Linear(10, 1)
         self.dropout = nn.Dropout()
         self._cuda = CUDA
+        self._maxlen = maxlen
 
-    def forward(self, data):
-        data = np.array(list(map(continuous, data)))
+    def forward(self, data: list):
+        data = np.array(list(map(lambda d: continuous(d, self._maxlen), data)))
         data = Variable(torch.from_numpy(data).long())
         if self._cuda: data = data.cuda()
 

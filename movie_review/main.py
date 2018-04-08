@@ -73,7 +73,7 @@ if __name__ == '__main__':
     torch.manual_seed(config.seed)
     torch.cuda.manual_seed(config.cudaseed)
 
-    model = CNNReg(config.vocasize, config.embedding, GPU_NUM)
+    model = CNNReg(config.vocasize, config.embedding, config.maxlen, GPU_NUM)
     if GPU_NUM: model = model.cuda()
 
     # DONOTCHANGE: Reserved for nsml use
@@ -88,7 +88,7 @@ if __name__ == '__main__':
 
     # 학습 모드일 때 사용합니다. (기본값)
     if config.mode == 'train':
-        dataset = MovieReviewDataset(DATASET_PATH, config.minlen, config.maxlen)
+        dataset = MovieReviewDataset(DATASET_PATH, config.vocasize, config.minlen, config.maxlen)
         train_loader = DataLoader(dataset=dataset,
                                   batch_size=config.batch,
                                   shuffle=True,
