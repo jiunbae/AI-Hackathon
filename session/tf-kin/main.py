@@ -19,6 +19,7 @@ flags.DEFINE_integer('highway_num', 4, 'Int, number of the highway layer, defaul
 flags.DEFINE_integer('batch_size', 32, 'Int, size of batch, default 32')
 flags.DEFINE_integer('n_epoch', 100, 'Int, number of epoch, default 100')
 flags.DEFINE_string('doc2vec_model', './doc2vec_model/doc2vec_twitter_kowiki_300000_docs.model', 'String, path of the doc2vec model.')
+flags.DEFINE_string('model_name', 'default', 'String, name of the model, default default')
 flags.DEFINE_string('iteration', '0', 'nsml reserved')
 flags.DEFINE_string('mode', 'train', 'nsml reserved')
 flags.DEFINE_integer('pause', 0, 'nsml reserved')
@@ -29,12 +30,13 @@ FLAGS = flags.FLAGS
 # This is for nsml leaderboard
 def bind_model(model, config):
     # 학습한 모델을 저장하는 함수입니다.
-    def save(filename, *args):
-        model.dump(filename)
+    def save(dir_name, *args):
+        os.makedirs(dir_name, exist_ok=True)
+        model.dump(os.path.join(dir_name, config.model_name))
 
     # 저장한 모델을 불러올 수 있는 함수입니다.
-    def load(filename, *args):
-        model.load(filename)
+    def load(dir_name, *args):
+        model.load(os.path.join(dir_name, config.model_name))
 
     def infer(raw_data, **kwargs):
         """
@@ -45,10 +47,11 @@ def bind_model(model, config):
         # dataset.py에서 작성한 preprocess 함수를 호출하여, 문자열을 벡터로 변환합니다
         preprocessed_data = dataset.preproc(raw_data, config.model, config.max_len)
         # 저장한 모델에 입력값을 넣고 prediction 결과를 리턴받습니다
-        point = model.pred(preprocessed_data)
+        pred = model.pred(preprocessed_data)[:, 0]
+        clipped = np.array(pred < 0.5, np.int)
         # DONOTCHANGE: They are reserved for nsml
-        # 리턴 결과는 [(confidence interval, 포인트)] 의 형태로 보내야만 리더보드에 올릴 수 있습니다. 리더보드 결과에 confidence interval의 값은 영향을 미치지 않습니다
-        return list(zip(np.zeros(len(point)), point))
+        # 리턴 결과는 [(확률, 0 or 1)] 의 형태로 보내야만 리더보드에 올릴 수 있습니다. 리더보드 결과에 확률의 값은 영향을 미치지 않습니다
+        return list(zip(pred, clipped))
 
     # DONOTCHANGE: They are reserved for nsml
     # nsml에서 지정한 함수에 접근할 수 있도록 하는 함수입니다.
@@ -97,9 +100,8 @@ def main(_):
 
     if FLAGS.mode == 'test_local':
         with open(os.path.join(DATASET_PATH, 'train/train_data'), 'rt', encoding='utf-8') as f:
-            reviews = f.readlines()
-        
-        print(nsml.infer(reviews))
+            queries = f.readlines()
+        print(nsml.infer(queries))
 
 if __name__ == '__main__':
     tf.app.run()

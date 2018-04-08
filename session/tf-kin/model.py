@@ -50,7 +50,7 @@ class TacotronEncoder(object):
         self.sess.run(self.optimize, feed_dict={self.plc_embed: x, self.plc_y: y, self.plc_dropout: dropout, self.plc_training: True})
 
     def pred(self, x):
-        out = tf.argmax(self.model, axis=1)
+        out = tf.nn.softmax(self.model)
         return self.sess.run(out, feed_dict={self.plc_embed: x, self.plc_dropout: 1.0, self.plc_training: False})
 
     def inference(self, obj, x, y=None):
