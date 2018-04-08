@@ -22,7 +22,7 @@ def infer(*args, **kwargs):
     global _infer
     return _infer(*args, **kwargs)
 
-def report(summary, scope, epoch, epoch_total, train__loss, step):
+def report(summary, scope, epoch, total_epoch, val_acc, train_acc, train__loss, val__loss, step):
     pass
 
 def bind(save, load, infer):
