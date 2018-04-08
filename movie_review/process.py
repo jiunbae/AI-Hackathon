@@ -25,6 +25,6 @@ def preprocess(data: list, minlen: int, maxlen: int) -> list:
     voc2idx = {v: i for i, v in enumerate(['<PAD>'] + list(commons) + ['<UNK>'])}
 
     # apply vectorize to parsed
-    vectorized = map(lambda r: [voc2idx.get(v, '<UNK>') for v in r], parsed)
+    vectorized = map(lambda r: [voc2idx.get(v, voc2idx['<UNK>']) for v in r], parsed)
 
     return list(vectorized)

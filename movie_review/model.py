@@ -20,7 +20,6 @@ class CNNReg(nn.Module):
 
     def forward(self, data):
         data = np.array(list(map(continuous, data)))
-        print (data.shape)
         data = Variable(torch.from_numpy(data).long())
         if self._cuda: data = data.cuda()
 
