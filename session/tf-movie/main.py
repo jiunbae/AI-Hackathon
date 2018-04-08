@@ -9,7 +9,7 @@ from model import TacotronEncoder
 from nsml import DATASET_PATH, HAS_DATASET, GPU_NUM, IS_ON_NSML
 
 flags = tf.app.flags
-flags.DEFINE_float('lr', 1e-4, 'Float, learning rate, default 1e-4')
+flags.DEFINE_float('lr', 1e-3, 'Float, learning rate, default 1e-4')
 flags.DEFINE_float('b1', 0.9, 'Float, beta1 value for Adam, default 0.9')
 flags.DEFINE_integer('vector_size', 300, 'Int, vector size of the word embedding vector, default 300')
 flags.DEFINE_integer('max_len', 200, 'Int, maximum length of the sentence, default 200')
@@ -83,18 +83,23 @@ def main(_):
 
         for epoch in range(FLAGS.n_epoch):
             loss = 0
+            acc = 0
             for _ in range(batch.iter_per_epoch):
                 batch_x, batch_y = batch()
                 model.train(batch_x, batch_y)
 
-                loss += model.inference(model.loss, batch_x, batch_y)
+                n_loss, n_acc = model.inference([model.loss, model.metric], batch_x, batch_y)
+                loss += n_loss
+                acc += n_acc
             
             loss /= batch.iter_per_epoch
-            acc = model.inference(model.metric, data.val_data, data.val_label)
+            acc /= batch.iter_per_epoch
 
-            print('Epoch {} : loss-{}, acc-{}'.format(epoch, loss, acc))
-            nsml.report(summary=True, scope=locals(), epoch=epoch, epoch_total=FLAGS.n_epoch,
-                        train__loss=loss, step=epoch)
+            val_loss, val_acc = model.inference([model.loss, model.metric], data.val_data, data.val_label)
+
+            print('Epoch {} / train_loss {} / val_loss {} / train_acc {} / val_acc {}'.format(epoch, loss, val_loss, acc, val_acc))
+            nsml.report(summary=True, scope=locals(), epoch=epoch, total_epoch=FLAGS.n_epoch, val_acc=val_acc,
+                        train_acc=acc, train__loss=loss, val__loss=val_loss, step=epoch)
             nsml.save(epoch)
 
     if FLAGS.mode == 'test_local':
