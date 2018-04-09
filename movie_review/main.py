@@ -33,7 +33,7 @@ def bind_model(model, config):
         print('Model loaded')
 
     def infer(raw_data, **kwargs):
-        data = preprocess(raw_data, config.minlen, config.maxlen)
+        data = preprocess(raw_data, config.vocasize, config.minlen, config.maxlen)
         model.eval()
 
         prediction = model(data)
