@@ -1,7 +1,9 @@
+import torch
+
 HAS_DATASET = False
 IS_ON_NSML = False
 DATASET_PATH = ''
-GPU_NUM = 0
+GPU_NUM = torch.cuda.device_count()
 
 _save = lambda x: None
 _load = lambda x: None
